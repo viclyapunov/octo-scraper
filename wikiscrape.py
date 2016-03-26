@@ -1,30 +1,31 @@
-import lxml.html as lh
 from selenium import webdriver
 from bs4 import BeautifulSoup
 
-browser = webdriver.PhantomJS('./phantomjs/bin/phantomjs')
-browser.set_window_size(1024, 768)
-browser.get('http://www.dvdsreleasedates.com/')
-content = browser.page_source
-#print content
-if content is not None:
-    soup = BeautifulSoup(content, "html.parser")
-    if soup is not None:
-        dvds = soup.find_all('table', {'class': 'fieldtable-inner'})
-        if dvds is not None:
-            try:
-                for dvd in dvds:
-                    if dvd is not None:
-                        if dvd.parent is not None:
-                            if dvd.parent.parent is not None:
-                                print dvd.parent.parent.tr.td
-                                break
-                            # if dvd.parent.tr is not None:
-                            #     if dvd.parent.tr.td is not None:
-                            #         print dvd.parent.tr.td
-                    #print (dvd)
-            except TypeError, e:
-                print "err: something went wrong"
 
-browser.quit()
+class DVDscraper(object):
+    def __init__(self):
+        browser = webdriver.PhantomJS('./phantomjs/bin/phantomjs')
+        browser.set_window_size(1024, 768)
+        browser.get('http://www.dvdsreleasedates.com')
+        browser.implicitly_wait(1)
+        self.content = browser.page_source
+        browser.quit()
 
+    def page_scrape(self):
+        if self.content is not None:
+            soup = BeautifulSoup(self.content, 'html.parser')
+            if soup is not None:
+                tables = soup.find_all('table', {'class': 'fieldtable-inner'})
+                if tables is not None:
+                    try:
+                        for table in tables:
+                            try:
+                                print table.tr.td
+                            except AttributeError:
+                                print '<table><tr><td> Tag not found'
+                    except TypeError:
+                        print "err: <tables> object not iterable"
+
+if __name__ == '__main__':
+    scraper = DVDscraper()
+    scraper.page_scrape()
